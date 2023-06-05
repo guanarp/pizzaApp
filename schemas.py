@@ -1,15 +1,63 @@
+from typing import List
 from pydantic import BaseModel
 
-from .models import Ingredient_type
+from .models import IngredientType, UserType
+"""
+This is where we declare the Pydantic models, they define a Schema(valid data shape)
 
-#This is where we declare the Pydantic models, they define a Schema(valid data shape)
+Notice that when we create an item(for example, pizza) we don't know the ID yet.
+But when someone requests it, we''ll know
 
+orm_mode will tell Pydantic to read data even if it's not a dict
+this will let us get an atribute in two ways
+var = data["attribute"] -> normal way, with a dict key
+var = data.attribute -> as an orm attribute
+
+Now, we just need to declare the response_model argument in path operations
+orm_mode also helps us with lazy loading/ lazy datasets
+"""
+
+
+# User
+class UserBase(BaseModel):
+    username: str
+    permission_level : UserType
+
+class UserCreate(UserBase):
+    password: str
+
+class User(UserBase):
+    id: int
+    is_active: bool
+
+    class Config:
+        orm_mode = True
+#Notice that with separate the password, it's only there when the user is created.      
+
+
+#Ingredient
+class  IngredientBase(BaseModel):
+    name: str
+    category: IngredientType 
+
+class IngredientCreate(IngredientBase):
+    pass
+
+
+#Pizza
 class PizzaBase(BaseModel):
     name : str
     price : int
-    is_active : Optional[bool] = False
+    #is_active : Optional[bool] = False
 
-class  Ingredient(BaseModel):
-    name: str
-    type: Ingredient_type 
+class PizzaCreate(PizzaBase):
+    pass
+
+class Pizza(PizzaBase):
+    id : int
+    ingredient_list: List[IngredientBase]
+
+    class Config:
+        orm_mode = True
+
     

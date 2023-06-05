@@ -12,9 +12,15 @@ from .database import Base
 #Enum
 ## This is to add other categories in the future
 
-class Ingredient_type(Enum): 
+class IngredientType(Enum): 
     basic = auto()
     premium = auto()
+
+class UserType(Enum):
+    basic = 1
+    staff = 2
+    SU = 3
+
 
 #SQLAlchemy models
 
@@ -25,8 +31,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     password = Column(String) #this is actually hashed
     is_active = Column(Boolean, default=True)
-    is_staff = Column(Boolean, default=False)
-    is_SU = Column(Boolean, default=False)
+    permission_level = Column(Enum(UserType),default=UserType.basic)
 
     #items = relationship("Item", back_populates="owner")
 
@@ -51,7 +56,7 @@ class Ingredient(Base):
 
     id = Column(Integer, primary_key=True, index=True) 
     name = Column(String, index=True)
-    type = Column(Enum(Ingredient_type), default=Ingredient_type.basic) #verificar si necesito index = true
+    category = Column(Enum(IngredientType), default=IngredientType.basic) #verificar si necesito index = true
 
     active_pizzas = relationship(
         "Pizza", back_populates = "ingredients")
