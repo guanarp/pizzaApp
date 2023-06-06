@@ -27,8 +27,8 @@ def home():
 def show_pizzas(db: Session = Depends(get_db)
                 ): #user: models.User = Depends(get_current_user)
     """
-    Checks if the request from a regular user or staff/SU
-    If staff/SU shows ALL pizzas
+    Checks if the request from a regular user or staff/SU \n
+    If staff/SU shows ALL pizzas \n
     else only active pizzas
     """
     get_all = False

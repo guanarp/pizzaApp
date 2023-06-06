@@ -1,9 +1,10 @@
+import enum
+
 from typing import Optional
-from enum import Enum, auto
 
 from pydantic import BaseModel
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -12,11 +13,11 @@ from .database import Base
 #Enum
 ## This is to add other categories in the future
 
-class IngredientType(Enum): 
+class IngredientType(enum.Enum): 
     basic = "basic"
     premium = "premium"
 
-class UserType(Enum):
+class UserType(enum.Enum):
     basic = "basic"
     staff = "staff"
     SU = "SU"

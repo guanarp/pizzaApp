@@ -63,8 +63,8 @@ def get_pizza(db: Session, pizza_id: int):
 
     return pizza
 
-def create_pizza(db: Session, pizza: schemas.PizzaCreate):
-    pass
+#def create_pizza(db: Session, pizza: schemas.PizzaCreate):
+#    pass
 
 
 #def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):

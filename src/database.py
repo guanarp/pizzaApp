@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 #We'll use a SQLite db
-SQLALCHEMY_DATABASE_URL = "sqlite:///./pizza_app.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./pizza_database.db"
 
 #With the database url we'll create the SQL Alchemy engine
 engine = create_engine(
