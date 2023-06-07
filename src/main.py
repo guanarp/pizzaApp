@@ -177,7 +177,7 @@ def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)) -> dict
 
 #Pizza-ingredient association
 @app.post("/pizzas/ingredients/{pizza_id}/{ingredient_id}")
-def add_ingredient_to_pizza(pizza_id : int, ingredient_id: int, db: Session = Depends(get_db)) -> dict : #user: models.User = Depends(get_current_user)
+def add_ingredient_to_pizza(pizza_id : int, ingredient_id: int, db: Session = Depends(get_db)) : #user: models.User = Depends(get_current_user)
     """
     Endpoint to add an ingredient to a pizza.
 
@@ -189,10 +189,17 @@ def add_ingredient_to_pizza(pizza_id : int, ingredient_id: int, db: Session = De
     Returns:
     - The created association between the pizza and ingredient.
     """
+    if CRUD.get_pizza(db, pizza_id) is None:
+        raise HTTPException(status_code=404, detail=f"Pizza not found")
+
+    if CRUD.get_ingredient(db, ingredient_id) is None:
+        raise HTTPException(status_code=404, detail=f"Ingredient not found")
+
     association = CRUD.get_pizza_ing_association(db, pizza_id, ingredient_id)
     if association:
         raise HTTPException(status_code=400, detail="Association already exists")
     new_association = CRUD.add_pizza_ing_association(db, pizza_id, ingredient_id)
+    print(new_association)
     return new_association
 
 @app.delete("/pizzas/ingredients/{pizza_id}/{ingredient_id}")

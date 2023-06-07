@@ -124,7 +124,7 @@ def change_pizza(db: Session, pizza_detail, name, price, is_active) -> models.Pi
     return pizza_detail
 
 #Ingredients
-def create_ingredient(db: Session, new_ingredient = schemas.IngredientBase) -> models.Ingredients:
+def create_ingredient(db: Session, new_ingredient = schemas.IngredientBase) -> models.Ingredient:
     """
     Create a new ingredient.
 
@@ -237,6 +237,7 @@ def add_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) ->
     }
 
     pizza_ing_db = models.Pizza_ingredient_association(**dict)
+    print(pizza_ing_db)
     db.add(pizza_ing_db)
     db.commit()
     db.refresh(pizza_ing_db)

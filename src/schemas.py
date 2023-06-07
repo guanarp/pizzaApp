@@ -50,27 +50,29 @@ class PizzaBase(BaseModel):
     #is_active : Optional[bool] = False
 
 #Pizza
-class Pizza(PizzaBase): #for internal use
-    
+class Pizza(PizzaBase):
     ingredients: List[IngredientBase]
 
     class Config:
         orm_mode = True
 
-class PizzaList(PizzaBase): #for  /pizza
+class PizzaList(PizzaBase):
     ingredients_number: int
 
     class Config: 
         orm_mode = True
 
-class PizzaDetails(PizzaBase): #for get with path {pizza_id}
+class PizzaDetails(PizzaBase): 
     ingredients_names: Optional[list]
     is_active: bool
 
     class Config:
         orm_mode = True
 
-class PizzaCreate(PizzaBase):
+class PizzaCreate(BaseModel): 
+    #we should'nt give it the id so it inherits from BaseModel
+    name: str
+    price: int
     is_active: bool = True
     
 #Ingredients
