@@ -204,7 +204,7 @@ def delete_ingredient(db: Session, ingredient: models.Ingredient) -> bool:
 
 
 #Associations
-def get_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) -> models.Pizza_ingredient_association:
+def get_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) -> models.PizzaIngredientAssociation:
     """
     Retrieve the association between a pizza and an ingredient.
 
@@ -216,10 +216,10 @@ def get_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) ->
     Returns:
     - Pizza_ingredient_association model
     """
-    association = db.query(models.Pizza_ingredient_association).filter(models.Pizza_ingredient_association.pizza_id==pizza_id, models.Pizza_ingredient_association.ingredient_id==ingredient_id).first()
+    association = db.query(models.PizzaIngredientAssociation).filter(models.PizzaIngredientAssociation.pizza_id==pizza_id, models.PizzaIngredientAssociation.ingredient_id==ingredient_id).first()
     return association
 
-def add_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) -> models.Pizza_ingredient_association:
+def add_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) -> models.PizzaIngredientAssociation:
     """
     Create a new association between a pizza and an ingredient.
 

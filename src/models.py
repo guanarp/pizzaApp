@@ -23,7 +23,7 @@ class UserType(enum.Enum):
     SU = "SU"
 
 
-class Pizza_ingredient_association(Base): 
+class PizzaIngredientAssociation(Base): 
     __tablename__ = 'pizza_ingredient_association'
     pizza_id = Column(ForeignKey("pizzas.id"), primary_key=True)
     ingredient_id = Column(ForeignKey("ingredients.id"), primary_key=True)
