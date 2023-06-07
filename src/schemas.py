@@ -35,7 +35,7 @@ class User(UserBase):
 #Notice that with separate the password, it's only there when the user is created.      
 
 
-#Ingredient
+#Base classes
 class  IngredientBase(BaseModel):
     name: str
     category: IngredientType 
@@ -43,17 +43,13 @@ class  IngredientBase(BaseModel):
     class Config:
         orm_mode = True
 
-class IngredientCreate(IngredientBase):
-    pass
-
-
-#Pizza
 class PizzaBase(BaseModel):
     id : int
     name : str
     price : int
     #is_active : Optional[bool] = False
 
+#Pizza
 class Pizza(PizzaBase): #for internal use
     
     ingredients: List[IngredientBase]
@@ -78,4 +74,8 @@ class PizzaCreate(PizzaBase):
     is_active: bool = True
     
 #Ingredients
+class IngredientCreate(IngredientBase):
+    id : int
+
+
 

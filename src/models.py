@@ -46,8 +46,6 @@ class User(Base):
 
     
 
-    #items = relationship("Item", back_populates="owner")
-
 class Pizza(Base):
     __tablename__ = "pizzas"
 
@@ -59,21 +57,18 @@ class Pizza(Base):
     ingredients = relationship(
         "Pizza_ingredient_association", 
         back_populates="pizza")
-    #ingredients_number = len(ingredients)
 
     @property
     def ingredients_number(self):
         return len(self.ingredients)
 
-    #def get_ingredients_number(self): #verificar si necesito la funcion
-    #    return len(self.ingredients)
 
 
 class Ingredient(Base):
     __tablename__ = "ingredients"
 
     id = Column(Integer, primary_key=True, index=True) 
-    name = Column(String, index=True)
+    name = Column(String, unique=True, index=True)
     category = Column(Enum(IngredientType), default=IngredientType.basic) #verificar si necesito index = true
 
 
