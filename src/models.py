@@ -25,10 +25,13 @@ class UserType(enum.Enum):
 
 class Pizza_ingredient_association(Base): 
     __tablename__ = 'pizza_ingredient_association'
-    pizza_id = Column(ForeignKey("pizza.id"), primary_key=True)
+    pizza_id = Column(ForeignKey("pizzas.id"), primary_key=True)
     ingredient_id = Column(ForeignKey("ingredients.id"), primary_key=True)
+
     ingredient = relationship("Ingredient", back_populates="pizzas")
     pizza = relationship("Pizza", back_populates="ingredients")
+
+
 
 #SQLAlchemy models
 
@@ -41,19 +44,26 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     permission_level = Column(Enum(UserType),default=UserType.basic)
 
+    
+
     #items = relationship("Item", back_populates="owner")
 
 class Pizza(Base):
     __tablename__ = "pizzas"
 
     id = Column(Integer, primary_key = True, index = True)
-    name = Column(String, index = True)
+    name = Column(String, unique = True, index = True)
     price = Column(Integer, index = True)
     is_active = Column(Boolean, default = False)
     
     ingredients = relationship(
-        "Ingredient", back_populates="pizzas")
+        "Pizza_ingredient_association", 
+        back_populates="pizza")
     #ingredients_number = len(ingredients)
+
+    @property
+    def ingredients_number(self):
+        return len(self.ingredients)
 
     #def get_ingredients_number(self): #verificar si necesito la funcion
     #    return len(self.ingredients)
@@ -66,6 +76,8 @@ class Ingredient(Base):
     name = Column(String, index=True)
     category = Column(Enum(IngredientType), default=IngredientType.basic) #verificar si necesito index = true
 
+
     pizzas = relationship(
-        "Pizza", back_populates = "ingredients")
+        "Pizza_ingredient_association", 
+        back_populates = "ingredient")
     

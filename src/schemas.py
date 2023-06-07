@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 from .models import IngredientType, UserType
@@ -49,13 +49,14 @@ class IngredientCreate(IngredientBase):
 
 #Pizza
 class PizzaBase(BaseModel):
+    id : int
     name : str
     price : int
     #is_active : Optional[bool] = False
 
 class Pizza(PizzaBase): #for internal use
-    id : int
-    ingredient_list: List[IngredientBase]
+    
+    ingredients: List[IngredientBase]
 
     class Config:
         orm_mode = True
@@ -66,10 +67,15 @@ class PizzaList(PizzaBase): #for  /pizza
     class Config: 
         orm_mode = True
 
-class PizzaDetails(Pizza): #for get with path {pizza_id}
-    ingredient_list: list
+class PizzaDetails(PizzaBase): #for get with path {pizza_id}
+    ingredients_names: Optional[list]
     is_active: bool
 
     class Config:
         orm_mode = True
+
+class PizzaCreate(PizzaBase):
+    is_active: bool = True
     
+#Ingredients
+

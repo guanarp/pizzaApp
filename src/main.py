@@ -23,7 +23,7 @@ def get_db():
 def home():
     return {"Welcome": "to the pizza app"}
 
-@app.get("/pizzas", response_model=List[schemas.Pizza])
+@app.get("/pizzas", response_model=List[schemas.PizzaList])
 def show_pizzas(db: Session = Depends(get_db)
                 ): #user: models.User = Depends(get_current_user)
     """
@@ -50,3 +50,24 @@ def show_pizza_details(pizza_id: int, db: Session = Depends(get_db)):#user: mode
         raise HTTPException(status_code=404, detail = "Pizza not found")
     
     return pizza_detail
+
+@app.post("/pizzas/",response_model = schemas.Pizza )
+def create_pizza(new_pizza: schemas.PizzaCreate, db: Session = Depends(get_db)):#user: models.User = Depends(get_current_user)
+    """
+    To complete
+    """
+    
+    return CRUD.create_pizza(db, new_pizza)
+
+@app.patch("/pizzas/{pizza_id}", response_model = schemas.PizzaDetails)
+def change_pizza(pizza_id: int, name: str, price: int, is_active: bool, db: Session = Depends(get_db)):#user: models.User = Depends(get_current_user)
+    """
+    To complete
+    """
+    
+    pizza_detail = CRUD.get_pizza(db, pizza_id)
+    if pizza_detail is None:
+        raise HTTPException(status_code=404, detail="Pizza not found.")
+    pizza_detail = CRUD.change_pizza(db, pizza_detail, name, price, is_active)
+    return pizza_detail
+    
