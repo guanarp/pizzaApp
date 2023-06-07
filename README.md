@@ -64,15 +64,15 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ```
 
-So now we just have to load ***<address>*** in a browser and we can see the home page
+So now we just have to load ***&lt;address&gt;*** in a browser and we can see the home page
 
-![Untitled](pizzaApp%2047ab7baa90e84326be7fb57e0c639e38/Untitled.png)
+![Untitled](imgs/Untitled.png)
 
 The project is also autodocumented with swaggerUI. It also provides fast and easy manual tests.
 
-We can access it loading ***<address>/docs***
+We can access it loading ***&lt;address&gt;/docs***
 
-![Untitled](pizzaApp%2047ab7baa90e84326be7fb57e0c639e38/Untitled%201.png)
+![Untitled](imgs/Untitled%201.png)
 
 It should look similar to this.
 
