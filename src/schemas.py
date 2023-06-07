@@ -40,6 +40,9 @@ class  IngredientBase(BaseModel):
     name: str
     category: IngredientType 
 
+    class Config:
+        orm_mode = True
+
 class IngredientCreate(IngredientBase):
     pass
 

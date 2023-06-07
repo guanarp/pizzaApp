@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from . import models,schemas
 
@@ -44,9 +44,9 @@ def get_pizza_list(db: Session, get_all: bool):
     returns: Query object from the db Session
     """
     if get_all:
-        pizzas = db.query(models.Pizza).all()
+        pizzas = db.query(models.Pizza).options(joinedload(models.Pizza.ingredients)).all()
     else:
-        pizzas = db.query(models.Pizza).filter(models.Pizza.is_active == True).all()
+        pizzas = db.query(models.Pizza).join(models.Pizza.ingredients).filter(models.Pizza.is_active).options(joinedload(models.Pizza.ingredients)).all()
     return pizzas
 
 def get_pizza(db: Session, pizza_id: int):

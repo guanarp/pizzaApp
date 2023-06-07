@@ -23,10 +23,12 @@ class UserType(enum.Enum):
     SU = "SU"
 
 
-pizza_ingredient_association = Table(
-    'pizza_ingredient', Base.metadata,
-    Column('pizza_id', Integer, ForeignKey('pizzas.id')),
-    Column('ingredient_id',Integer, ForeignKey('ingredients.id')))
+class Pizza_ingredient_association(Base): 
+    __tablename__ = 'pizza_ingredient_association'
+    pizza_id = Column(ForeignKey("pizza.id"), primary_key=True)
+    ingredient_id = Column(ForeignKey("ingredients.id"), primary_key=True)
+    ingredient = relationship("Ingredient", back_populates="pizzas")
+    pizza = relationship("Pizza", back_populates="ingredients")
 
 #SQLAlchemy models
 
@@ -50,8 +52,7 @@ class Pizza(Base):
     is_active = Column(Boolean, default = False)
     
     ingredients = relationship(
-        "Ingredient", secondary = pizza_ingredient_association, 
-        back_populates="pizzas")
+        "Ingredient", back_populates="pizzas")
     #ingredients_number = len(ingredients)
 
     #def get_ingredients_number(self): #verificar si necesito la funcion
@@ -66,6 +67,5 @@ class Ingredient(Base):
     category = Column(Enum(IngredientType), default=IngredientType.basic) #verificar si necesito index = true
 
     pizzas = relationship(
-        "Pizza", secondary = pizza_ingredient_association, 
-        back_populates = "ingredients")
+        "Pizza", back_populates = "ingredients")
     
