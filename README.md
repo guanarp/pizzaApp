@@ -128,7 +128,5 @@ It should look similar to this.
 | POST | /ingredients | Create a new ingredient. | new_ingredient: Details of the new ingredient to create |
 | PATCH | /ingredients/{ingredient_id} | Update the details of an ingredient. | ingredient_id: ID of the ingredient to update |
 | DELETE | /ingredients/{ingredient_id} | Delete an ingredient. | ingredient_id: ID of the ingredient to delete |
-| POST | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Add an ingredient to a pizza. | pizza_id: ID of the pizza
-ingredient_id: ID of the ingredient |
-| DELETE | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Remove an ingredient from a pizza. | pizza_id: ID of the pizza
-ingredient_id: ID of the ingredient |
+| POST | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Add an ingredient to a pizza. | pizza_id: ID of the pizza <br>ingredient_id: ID of the ingredient |
+| DELETE | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Remove an ingredient from a pizza. | pizza_id: ID of the pizza <br>ingredient_id: ID of the ingredient |
