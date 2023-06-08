@@ -1,11 +1,16 @@
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import (
+    OAuth2PasswordRequestForm, HTTPBasic, 
+    HTTPBasicCredentials
+)
 from sqlalchemy.orm import Session
 
+from base64 import b64encode
+
 from . import CRUD, models, schemas
-from .database import SessionLocal, engine
+from .database import SessionLocal, engine, get_db
 from .deps import get_current_user
 from .utils import (
     get_hashed_password,
@@ -19,16 +24,8 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(debug=True)
 
+security = HTTPBasic()
 
-def get_db() -> Session:
-    """
-    Dependency function to get a database session.
-    """
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 #CurrentUser = Annotated[User, Depends(get_current_user)]        
 
@@ -44,28 +41,97 @@ def home() -> dict:
 
 #Users
 @app.post("/signup", summary="Create new user", response_model=schemas.User)
-async def create_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
-    #querying database to check if user already exist
+async def create_user(data: schemas.UserCreate, db: Session = Depends(get_db)) -> models.User:
+    """
+    Endpoint for creating a new user.
+
+    Parameters:
+    - data: User creation data.
+    - db: Database session dependency.
+
+    Returns:
+    - The created user model.
+    """
     user = CRUD.get_user_by_username(db,data.username)
+    #querying database to check if user already exist
     if user is None:
-        return CRUD.create_user(db, user)
+        return CRUD.create_user(db, data)
     raise HTTPException(status_code=400, detail = "The username already exists")
 
 @app.post("/login", response_model=schemas.TokenSchema)
 async def login(
     form_data: OAuth2PasswordRequestForm=Depends(), db : Session=Depends(get_db)) -> dict:
+    """
+    Endpoint for JWT authentication login.
+
+    Parameters:
+    - form_data: OAuth2PasswordRequestForm containing the provided username and password.
+    - db: Database session dependency.
+
+    Returns:
+    - Token response containing the access token and refresh token.
+    """
     user = CRUD.get_user_by_username(db,form_data.username)
     if user is None:
         raise HTTPException(status_code=400, detail = "Incorrect username or password")
-    
-    hashed_password = user['password']
+    print(user.password)
+    hashed_password = user.password
     if verify_password(form_data.password, hashed_password):
         return {
-            "access_token": create_access_token(user['email']),
-            "refresh_token": create_refresh_token(user['email'])
+            "access_token": create_access_token(user.username),
+            "refresh_token": create_refresh_token(user.username)
         }
     raise HTTPException(status_code=400, detail = "Incorrect username or password")
 
+@app.post("/login/basic")
+def login_basic(credentials: HTTPBasicCredentials = Depends(security)):
+    """
+    Endpoint for basic authentication login.
+
+    Parameters:
+    - credentials: HTTPBasicCredentials object containing the provided username and password.
+
+    Returns:
+    - Token response containing the access token.
+
+    Raises:
+    - HTTPException 401: If the provided credentials are invalid.
+    """
+    if credentials.username == "admin" and credentials.password == "tdp":
+        #in a real exmample the user and password should be hashed or in .env variables
+        #also, the user can be looked up in users db filtering non basic users instead of #doing "== admin"
+
+        token = b64encode(f"{credentials.username}:{credentials.password}".encode("utf-8")).decode("utf-8")
+        return {"token_type": "basic", "access_token": token}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+@app.patch("/user/{user_id}", response_model = schemas.User)
+def modify_user_permission(
+    user_id: int, level, db: Session = Depends(get_db), 
+    modifier: models.User = Depends(get_current_user)) -> models.User:
+    """
+    Endpoint to modify the permission level of a user.
+
+    Parameters:
+    - user_id: The ID of the user to modify.
+    - level: The new permission level to assign.
+    - db: Database session dependency.
+    - modifier: The currently authenticated user making the modification.
+
+    Returns:
+    - The updated user model.
+    """
+    if modifier.permission_level != models.UserType.SU:
+        raise HTTPException(status_code=403, detail="You must be a SU to modify users")
+    user_db = CRUD.get_user(db, user_id) 
+    if user_db is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    user_db = CRUD.modify_user_permission(db, user_db, level)
+
+    return user_db
+    
 
 
 
@@ -87,16 +153,18 @@ def show_pizzas(
     - List of pizzas according to user type
 
     """
-    get_all = True
-    #if user.permission_level != 1:
-    #    get_all = True
+    get_all = False
+    if user.permission_level != models.UserType.basic:
+        get_all = True
     pizza_list = CRUD.get_pizza_list(db,get_all)
     for pizza in pizza_list:
         pizza.ingredient_number = len(pizza.ingredients)
     return pizza_list
 
 @app.get("/pizzas/{pizza_id}", response_model = schemas.PizzaDetails)
-def show_pizza_details(pizza_id: int, db: Session = Depends(get_db)) -> schemas.PizzaDetails:
+def show_pizza_details(
+    pizza_id: int, db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)) -> schemas.PizzaDetails:
     """
     Endpoint to retrieve details of a specific pizza by ID.
     
@@ -107,6 +175,10 @@ def show_pizza_details(pizza_id: int, db: Session = Depends(get_db)) -> schemas.
     Returns:
     - Details of the pizza.
     """
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(
+            status_code=403, detail="You must be a staff or higher to see details")
+
     pizza_detail = CRUD.get_pizza(db, pizza_id)
     
     if pizza_detail is None:
@@ -128,6 +200,9 @@ def create_pizza(
     Returns:
     - The created pizza.
     """
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(status_code=403, 
+                            detail="You must be a staff or higher to create pizzas")
     
     return CRUD.create_pizza(db, new_pizza)
 
@@ -149,7 +224,11 @@ def change_pizza(
     Returns:
     - The updated pizza details.
     """
-    
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(
+            status_code=403, detail="You must be a staff or higher to modify pizzas")
+
+
     pizza_detail = CRUD.get_pizza(db, pizza_id)
     if pizza_detail is None:
         raise HTTPException(status_code=404, detail="Pizza not found.")
@@ -172,6 +251,10 @@ def create_ingredient(
     Returns:
     - The created ingredient.
     """
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(
+            status_code=403, detail="You must be a staff or higher to create ingredients")
+    
     return CRUD.create_ingredient(db,new_ingredient)
 
 @app.patch("/ingredients/{ingredient_id}",response_model = schemas.IngredientBase)
@@ -191,6 +274,10 @@ def change_ingredient(
     Returns:
     - The updated ingredient details.
     """
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(
+            status_code=403, detail="You must be a staff or higher to modify ingredients")
+
     ingredient = CRUD.get_ingredient(db,ingredient_id)
     if ingredient is None:
         raise HTTPException(status_code=404, detail="Ingredient not found.")
@@ -211,6 +298,10 @@ def delete_ingredient(
     Returns:
     - Status of the deletion.
     """
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(
+            status_code=403, detail="You must be a staff or higher to delete ingredients")
+
     ingredient = CRUD.get_ingredient(db, ingredient_id)
     if ingredient is None:
         raise HTTPException(status_code=404, detail="Ingredient not found.")
@@ -239,6 +330,11 @@ def add_ingredient_to_pizza(
     Returns:
     - The created association between the pizza and ingredient.
     """
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(
+            status_code=403, 
+            detail="You must be a staff or higher to add ingredients to pizzas")
+
     if CRUD.get_pizza(db, pizza_id) is None:
         raise HTTPException(status_code=404, detail=f"Pizza not found")
 
@@ -267,13 +363,19 @@ def remove_ingredient_to_pizza(
     Returns:
     - Status of the removal.
     """
+    if user.permission_level == models.UserType.basic:
+        raise HTTPException(
+            status_code=403, 
+            detail="You must be a staff or higher to delete ingredients from pizzas")
+    
     association = CRUD.get_pizza_ing_association(db, pizza_id, ingredient_id)
+
     if not(association):
         raise HTTPException(status_code=404, detail="Association not found")
     CRUD.delete_pizza_ing_association(db, association)
     return {
         "status" : "completed", 
-        "detail" : f"Ingredient {association.ingredient_id}"
+        "detail" : f"Ingredient {association.ingredient_id} "
                     f"removed from pizza {association.pizza_id}"
     }
 

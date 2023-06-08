@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from passlib.context import CryptContext
 
-from .database import get_db
+
 
 load_dotenv()
 
@@ -44,7 +44,7 @@ as strings.
 def create_access_token(
         subject: Union[str, Any], expires_delta: int = None) -> str:
     
-    if expires_delta is None:
+    if expires_delta is not None:
         expires_delta = datetime.utcnow() + expires_delta
     else:
         expires_delta = datetime.utcnow() + timedelta(
@@ -66,5 +66,6 @@ def create_refresh_token(
     encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
-
+#create_access_token()
+#create_access_token()
 

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
 
-from . import models,schemas
+from . import models,schemas,utils
 
 
 #Session let us declare a db object, and have some type checks
@@ -17,7 +17,7 @@ def get_user(db: Session, user_id: int) -> models.User:
     Returns:
     - User model
     """
-    return db.Query(models.User).filter(models.User.id == user_id).first()
+    return db.query(models.User).filter(models.User.id == user_id).first()
 
 def get_user_by_username(db: Session, username: str) -> models.User:
     """
@@ -30,7 +30,7 @@ def get_user_by_username(db: Session, username: str) -> models.User:
     Returns:
     - User model
     """
-    return db.Query(models.User).filter(
+    return db.query(models.User).filter(
         models.User.username == username).first()
 
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
@@ -46,11 +46,23 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     """
     #password = get from a token
     _password = user.password
-    user_db = models.User(username = user.username, password = _password)
+    print(_password)
+    hashed_password = utils.get_hashed_password(_password)
+    user_db = models.User(username = user.username, password = hashed_password)
     db.add(user_db)
     db.commit()
     db.refresh(user_db)
     return user_db
+
+def modify_user_permission(
+        db : Session, user: schemas.User, 
+        level: models.UserType) -> models.User:
+    
+    user.permission_level = level
+    db.commit()
+    db.refresh(user)
+    
+    return user
 
 
 #Pizza
@@ -73,6 +85,7 @@ def get_pizza_list(db: Session, get_all: bool) -> list[models.Pizza]:
             models.Pizza.ingredients).filter(models.Pizza.is_active).options(
             joinedload(models.Pizza.ingredients)).all()
     return pizzas_db
+
 
 def get_pizza(db: Session, pizza_id: int) -> models.Pizza:
     """

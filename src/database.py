@@ -1,7 +1,7 @@
 #imports
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 #We'll use a SQLite db
 SQLALCHEMY_DATABASE_URL = "sqlite:///./pizza_database.db"
@@ -17,4 +17,14 @@ SessionLocal = sessionmaker(
 
 #We'll inherit from Base to create db models/classes
 Base = declarative_base()
+
+def get_db() -> Session:
+    """
+    Dependency function to get a database session.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
