@@ -214,7 +214,7 @@ def get_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) ->
     - ingredient_id: ID of the ingredient
 
     Returns:
-    - Pizza_ingredient_association model
+    - PizzaIngredientAssociation model
     """
     association = db.query(models.PizzaIngredientAssociation).filter(models.PizzaIngredientAssociation.pizza_id==pizza_id, models.PizzaIngredientAssociation.ingredient_id==ingredient_id).first()
     return association
@@ -229,14 +229,14 @@ def add_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) ->
     - ingredient_id: ID of the ingredient
 
     Returns:
-    - Created Pizza_ingredient_association model
+    - Created PizzaIngredientAssociation model
     """
     dict = {
         'pizza_id' : pizza_id,
         'ingredient_id' : ingredient_id
     }
 
-    pizza_ing_db = models.Pizza_ingredient_association(**dict)
+    pizza_ing_db = models.PizzaIngredientAssociation(**dict)
     print(pizza_ing_db)
     db.add(pizza_ing_db)
     db.commit()
@@ -244,13 +244,13 @@ def add_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) ->
 
     return pizza_ing_db
 
-def delete_pizza_ing_association(db: Session, association: models.Pizza_ingredient_association):
+def delete_pizza_ing_association(db: Session, association: models.PizzaIngredientAssociation):
     """
     Delete an association between a pizza and an ingredient.
 
     Parameters:
     - db: SQLalchemy Session
-    - association: Pizza_ingredient_association model
+    - association: PizzaIngredientAssociation model
     """
 
     db.delete(association)

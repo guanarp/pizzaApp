@@ -55,7 +55,7 @@ class Pizza(Base):
     is_active = Column(Boolean, default = False)
     
     ingredients = relationship(
-        "Pizza_ingredient_association", 
+        "PizzaIngredientAssociation", 
         back_populates="pizza")
 
     @property
@@ -73,6 +73,6 @@ class Ingredient(Base):
 
 
     pizzas = relationship(
-        "Pizza_ingredient_association", 
+        "PizzaIngredientAssociation", 
         back_populates = "ingredient")
     
