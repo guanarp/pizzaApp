@@ -19,6 +19,20 @@ def get_user(db: Session, user_id: int) -> models.User:
     """
     return db.Query(models.User).filter(models.User.id == user_id).first()
 
+def get_user_by_username(db: Session, username: str) -> models.User:
+    """
+    Retrieve a user by user username.
+
+    Parameters:
+    - db: SQLalchemy Session
+    - username: username of the user
+
+    Returns:
+    - User model
+    """
+    return db.Query(models.User).filter(
+        models.User.username == username).first()
+
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     """
     Create a new user.
@@ -32,11 +46,11 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     """
     #password = get from a token
     _password = user.password
-    db_user = models.User(username = user.username, password = _password)
-    db.add(db_user)
+    user_db = models.User(username = user.username, password = _password)
+    db.add(user_db)
     db.commit()
-    db.refresh(db_user)
-    return db_user
+    db.refresh(user_db)
+    return user_db
 
 
 #Pizza
@@ -52,11 +66,11 @@ def get_pizza_list(db: Session, get_all: bool) -> list[models.Pizza]:
     - List of Pizza models
     """
     if get_all:
-        pizzas_db = db.query(models.Pizza).options(joinedload(models.Pizza.ingredients)).all()
+        pizzas_db = db.query(models.Pizza).options(
+            joinedload(models.Pizza.ingredients)).all()
     else:
         pizzas_db = db.query(models.Pizza).join(
-            models.Pizza.ingredients).filter(
-            models.Pizza.is_active).options(
+            models.Pizza.ingredients).filter(models.Pizza.is_active).options(
             joinedload(models.Pizza.ingredients)).all()
     return pizzas_db
 
@@ -74,7 +88,9 @@ def get_pizza(db: Session, pizza_id: int) -> models.Pizza:
     pizza = db.query(models.Pizza).filter(models.Pizza.id == pizza_id).first()
     if pizza is None:
         return None
-    ingredients_names = [association.ingredient.name for association in pizza.ingredients]
+    ingredients_names = [
+        association.ingredient.name for association in pizza.ingredients
+    ]
     pizza.ingredients_names = ingredients_names
     return pizza
 
@@ -95,7 +111,8 @@ def create_pizza(db: Session, pizza: schemas.PizzaCreate) -> models.Pizza:
     db.refresh(pizza)
     return pizza
 
-def change_pizza(db: Session, pizza_detail, name, price, is_active) -> models.Pizza:
+def change_pizza(
+        db: Session, pizza_detail, name, price, is_active) -> models.Pizza:
     """
     Update the details of a pizza.
 
@@ -124,7 +141,9 @@ def change_pizza(db: Session, pizza_detail, name, price, is_active) -> models.Pi
     return pizza_detail
 
 #Ingredients
-def create_ingredient(db: Session, new_ingredient = schemas.IngredientBase) -> models.Ingredient:
+def create_ingredient(
+        db: Session, 
+        new_ingredient = schemas.IngredientBase) -> models.Ingredient:
     """
     Create a new ingredient.
 
@@ -135,7 +154,8 @@ def create_ingredient(db: Session, new_ingredient = schemas.IngredientBase) -> m
     Returns:
     - Created Ingredient model
     """
-    new_ingredient = models.Ingredient(**new_ingredient.dict()) #fastapi recommended implementation 
+    new_ingredient = models.Ingredient(**new_ingredient.dict()) 
+    #fastapi recommended implementation 
     db.add(new_ingredient)
     db.commit()
     db.refresh(new_ingredient)
@@ -152,12 +172,14 @@ def get_ingredient(db: Session, ingredient_id: int) -> models.Ingredient:
     Returns:
     - Ingredient model
     """
-    ingredient = db.query(models.Ingredient).filter(models.Ingredient.id == ingredient_id).first()
+    ingredient = db.query(models.Ingredient).filter(
+        models.Ingredient.id == ingredient_id).first()
     if ingredient is None:
         return None
     return ingredient
 
-def change_ingredient(db: Session, ingredient, name=None, category=None) -> models.Ingredient:
+def change_ingredient(
+        db: Session, ingredient, name=None, category=None) -> models.Ingredient:
     """
     Update the details of an ingredient.
 
@@ -193,10 +215,14 @@ def delete_ingredient(db: Session, ingredient: models.Ingredient) -> bool:
     Returns:
     - True if the ingredient is deleted successfully, False otherwise
     """
-    active_pizzas = [association.pizza for association in ingredient.pizzas if (association.pizza.is_active) ]
+    active_pizzas = [
+        association.pizza for association in ingredient.pizzas 
+        if association.pizza.is_active 
+    ]
     
     if len(active_pizzas) == 0:
-        ingredients_db = db.query(models.Ingredient).filter(models.Ingredient.id==ingredient.id).first()
+        ingredients_db = db.query(models.Ingredient).filter(
+            models.Ingredient.id==ingredient.id).first()
         db.delete(ingredients_db)
         db.commit()
         return True
@@ -204,7 +230,9 @@ def delete_ingredient(db: Session, ingredient: models.Ingredient) -> bool:
 
 
 #Associations
-def get_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) -> models.PizzaIngredientAssociation:
+def get_pizza_ing_association(
+        db: Session, pizza_id: int, 
+        ingredient_id: int) -> models.PizzaIngredientAssociation:
     """
     Retrieve the association between a pizza and an ingredient.
 
@@ -216,10 +244,14 @@ def get_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) ->
     Returns:
     - PizzaIngredientAssociation model
     """
-    association = db.query(models.PizzaIngredientAssociation).filter(models.PizzaIngredientAssociation.pizza_id==pizza_id, models.PizzaIngredientAssociation.ingredient_id==ingredient_id).first()
+    association = db.query(models.PizzaIngredientAssociation).filter(
+        models.PizzaIngredientAssociation.pizza_id==pizza_id, 
+        models.PizzaIngredientAssociation.ingredient_id==ingredient_id).first()
     return association
 
-def add_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) -> models.PizzaIngredientAssociation:
+def add_pizza_ing_association(
+        db: Session, pizza_id: int, 
+        ingredient_id: int) -> models.PizzaIngredientAssociation:
     """
     Create a new association between a pizza and an ingredient.
 
@@ -244,7 +276,8 @@ def add_pizza_ing_association(db: Session, pizza_id: int, ingredient_id: int) ->
 
     return pizza_ing_db
 
-def delete_pizza_ing_association(db: Session, association: models.PizzaIngredientAssociation):
+def delete_pizza_ing_association(
+        db: Session, association: models.PizzaIngredientAssociation):
     """
     Delete an association between a pizza and an ingredient.
 

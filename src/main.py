@@ -1,11 +1,19 @@
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import NoResultFound
 
 from . import CRUD, models, schemas
 from .database import SessionLocal, engine
+from .deps import get_current_user
+from .utils import (
+    get_hashed_password,
+    create_access_token,
+    create_refresh_token,
+    verify_password
+)
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -34,11 +42,39 @@ def home() -> dict:
     """
     return {"Welcome": "to the pizza app"}
 
+#Users
+@app.post("/signup", summary="Create new user", response_model=schemas.User)
+async def create_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
+    #querying database to check if user already exist
+    user = CRUD.get_user_by_username(db,data.username)
+    if user is None:
+        return CRUD.create_user(db, user)
+    raise HTTPException(status_code=400, detail = "The username already exists")
+
+@app.post("/login", response_model=schemas.TokenSchema)
+async def login(
+    form_data: OAuth2PasswordRequestForm=Depends(), db : Session=Depends(get_db)) -> dict:
+    user = CRUD.get_user_by_username(db,form_data.username)
+    if user is None:
+        raise HTTPException(status_code=400, detail = "Incorrect username or password")
+    
+    hashed_password = user['password']
+    if verify_password(form_data.password, hashed_password):
+        return {
+            "access_token": create_access_token(user['email']),
+            "refresh_token": create_refresh_token(user['email'])
+        }
+    raise HTTPException(status_code=400, detail = "Incorrect username or password")
+
+
+
+
 
 #Pizza CRUD
 @app.get("/pizzas", response_model=List[schemas.PizzaList])
-def show_pizzas(db: Session = Depends(get_db)
-                ) -> List[schemas.PizzaList]: #user: models.User = Depends(get_current_user)
+def show_pizzas(
+        db: Session = Depends(get_db), 
+        user: models.User = Depends(get_current_user))-> List[schemas.PizzaList]:
     """
     Endpoint to retrieve a list of pizzas.
     - Regular users get only active pizzas.
@@ -60,7 +96,7 @@ def show_pizzas(db: Session = Depends(get_db)
     return pizza_list
 
 @app.get("/pizzas/{pizza_id}", response_model = schemas.PizzaDetails)
-def show_pizza_details(pizza_id: int, db: Session = Depends(get_db)) -> schemas.PizzaDetails :#user: models.User = Depends(get_current_user)
+def show_pizza_details(pizza_id: int, db: Session = Depends(get_db)) -> schemas.PizzaDetails:
     """
     Endpoint to retrieve details of a specific pizza by ID.
     
@@ -79,7 +115,9 @@ def show_pizza_details(pizza_id: int, db: Session = Depends(get_db)) -> schemas.
     return pizza_detail
 
 @app.post("/pizzas/",response_model = schemas.Pizza)
-def create_pizza(new_pizza: schemas.PizzaCreate, db: Session = Depends(get_db)) -> schemas.Pizza:#user: models.User = Depends(get_current_user)
+def create_pizza(
+    new_pizza: schemas.PizzaCreate, db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)) -> schemas.Pizza:
     """
     Endpoint to create a new pizza.
 
@@ -94,7 +132,10 @@ def create_pizza(new_pizza: schemas.PizzaCreate, db: Session = Depends(get_db)) 
     return CRUD.create_pizza(db, new_pizza)
 
 @app.patch("/pizzas/{pizza_id}", response_model = schemas.PizzaDetails)
-def change_pizza(pizza_id: int, name: str | None = None, price: int | None = None, is_active: bool | None = None, db: Session = Depends(get_db)) -> schemas.PizzaDetails:#user: models.User = Depends(get_current_user)
+def change_pizza(
+    pizza_id: int, name: str | None = None, price: int | None = None, 
+    is_active: bool | None = None, db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)) -> schemas.PizzaDetails:
     """
     Endpoint to update the details of a pizza.
 
@@ -118,7 +159,9 @@ def change_pizza(pizza_id: int, name: str | None = None, price: int | None = Non
 
 #Ingredient CRUD
 @app.post("/ingredients", response_model = schemas.IngredientCreate)
-def create_ingredient(new_ingredient: schemas.IngredientBase, db: Session = Depends(get_db)) -> schemas.IngredientCreate:
+def create_ingredient(
+    new_ingredient: schemas.IngredientBase, db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)) -> schemas.IngredientCreate:
     """
     Endpoint to create a new ingredient
 
@@ -132,7 +175,10 @@ def create_ingredient(new_ingredient: schemas.IngredientBase, db: Session = Depe
     return CRUD.create_ingredient(db,new_ingredient)
 
 @app.patch("/ingredients/{ingredient_id}",response_model = schemas.IngredientBase)
-def change_ingredient(ingredient_id: int, name: str | None = None, category: str | None = None, db: Session = Depends(get_db)) -> schemas.IngredientBase:#user: models.User = Depends(get_current_user)
+def change_ingredient(
+    ingredient_id: int, name: str | None = None, category: str | None = None, 
+    db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)) -> schemas.IngredientBase:
     """
     Endpoint to update the details of an ingredient.
 
@@ -152,7 +198,9 @@ def change_ingredient(ingredient_id: int, name: str | None = None, category: str
     return ingredient
     
 @app.delete("/ingredients/{ingredient_id}")
-def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)) -> dict: #user: models.User = Depends(get_current_user)
+def delete_ingredient(
+    ingredient_id: int, db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)) -> dict: 
     """
     Endpoint to delete an ingredient.
 
@@ -169,15 +217,17 @@ def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)) -> dict
     deleted = CRUD.delete_ingredient(db,ingredient)
     if deleted:
         return {
-                "status" : "completed", 
-                "detail" : f"Ingredient {ingredient.name} with id {ingredient.id} deleted"
-                }
+            "status" : "completed", 
+            "detail" : f"Ingredient {ingredient.name} with id {ingredient.id} deleted"
+        }
     
-    raise HTTPException (status_code=409, detail="Cannot delete an ingredient in an active pizza")
+    raise HTTPException (status_code=400, detail="Cannot delete an ingredient in an active pizza")
 
 #Pizza-ingredient association
 @app.post("/pizzas/ingredients/{pizza_id}/{ingredient_id}")
-def add_ingredient_to_pizza(pizza_id : int, ingredient_id: int, db: Session = Depends(get_db)) : #user: models.User = Depends(get_current_user)
+def add_ingredient_to_pizza(
+    pizza_id : int, ingredient_id: int, db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)):
     """
     Endpoint to add an ingredient to a pizza.
 
@@ -203,7 +253,9 @@ def add_ingredient_to_pizza(pizza_id : int, ingredient_id: int, db: Session = De
     return new_association
 
 @app.delete("/pizzas/ingredients/{pizza_id}/{ingredient_id}")
-def remove_ingredient_to_pizza(pizza_id : int, ingredient_id: int, db: Session = Depends(get_db)) -> dict: #user: models.User = Depends(get_current_user)
+def remove_ingredient_to_pizza(
+    pizza_id : int, ingredient_id: int, db: Session = Depends(get_db), 
+    user: models.User = Depends(get_current_user)) -> dict:
     """
     Endpoint to remove an ingredient from a pizza.
 
@@ -220,9 +272,10 @@ def remove_ingredient_to_pizza(pizza_id : int, ingredient_id: int, db: Session =
         raise HTTPException(status_code=404, detail="Association not found")
     CRUD.delete_pizza_ing_association(db, association)
     return {
-            "status" : "completed", 
-            "detail" : f"Ingredient {association.ingredient_id} removed from pizza {association.pizza_id}"
-            }
+        "status" : "completed", 
+        "detail" : f"Ingredient {association.ingredient_id}"
+                    f"removed from pizza {association.pizza_id}"
+    }
 
 
     

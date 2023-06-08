@@ -2,6 +2,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from .models import IngredientType, UserType
+
 """
 This is where we declare the Pydantic models, they define a Schema(valid data shape)
 
@@ -21,7 +22,6 @@ orm_mode also helps us with lazy loading/ lazy datasets
 # User
 class UserBase(BaseModel):
     username: str
-    permission_level : UserType
 
 class UserCreate(UserBase):
     password: str
@@ -29,10 +29,11 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
+    permission_level : UserType
 
     class Config:
         orm_mode = True
-#Notice that with separate the password, it's only there when the user is created.      
+#Notice that we separate the password, it's only there when the user is created.      
 
 
 #Base classes
@@ -48,6 +49,7 @@ class PizzaBase(BaseModel):
     name : str
     price : int
     #is_active : Optional[bool] = False
+
 
 #Pizza
 class Pizza(PizzaBase):
@@ -74,10 +76,28 @@ class PizzaCreate(BaseModel):
     name: str
     price: int
     is_active: bool = True
-    
+
+
 #Ingredients
 class IngredientCreate(IngredientBase):
     id : int
+
+
+#Tokens
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    
+    class Config:
+        orm_mode = True
+
+class TokenPayload(BaseModel):
+    sub: str 
+    exp: int
+    
+    class Config:
+        orm_mode = True
+
 
 
 
