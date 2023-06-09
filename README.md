@@ -144,3 +144,9 @@ The postman collections have the requierd environment variables for every reques
 | DELETE | /ingredients/{ingredient_id} | Delete an ingredient. | ingredient_id: ID of the ingredient to delete |
 | POST | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Add an ingredient to a pizza. | pizza_id: ID of the pizza <br>ingredient_id: ID of the ingredient |
 | DELETE | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Remove an ingredient from a pizza. | pizza_id: ID of the pizza <br>ingredient_id: ID of the ingredient |
+
+## To-do
+- The change methods don't have a validation (like the create methods have) to check if the new name is already in the database. The process is similar so it should be quick to modify this.
+- Verify why the change and delete tests are not working as expected even when the requests are indeed working.
+- Add pizza order methods so a client could "ask for a pizza"
+
