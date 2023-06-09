@@ -107,6 +107,26 @@ def get_pizza(db: Session, pizza_id: int) -> models.Pizza:
     pizza.ingredients_names = ingredients_names
     return pizza
 
+def get_pizza_by_name(db: Session, pizza_name: str) -> models.Pizza:
+    """
+    Retrieve a pizza by its ID.
+
+    Parameters:
+    - db: SQLalchemy Session
+    - pizza_id: ID of the pizza
+
+    Returns:
+    - Pizza model
+    """
+    pizza = db.query(models.Pizza).filter(models.Pizza.name == pizza_name).first()
+    if pizza is None:
+        return None
+    ingredients_names = [
+        association.ingredient.name for association in pizza.ingredients
+    ]
+    pizza.ingredients_names = ingredients_names
+    return pizza
+
 def create_pizza(db: Session, pizza: schemas.PizzaCreate) -> models.Pizza:
     """
     Create a new pizza.
@@ -140,11 +160,11 @@ def change_pizza(
     - Updated Pizza model
     """
     
-    if name is not(None):
+    if name is not None :
         pizza_detail.name = name
-    if price is not(None):
+    if price is not None:
         pizza_detail.price = price
-    if is_active is not(None):
+    if is_active is not None:
         pizza_detail.is_active = is_active
     
     
@@ -187,6 +207,23 @@ def get_ingredient(db: Session, ingredient_id: int) -> models.Ingredient:
     """
     ingredient = db.query(models.Ingredient).filter(
         models.Ingredient.id == ingredient_id).first()
+    if ingredient is None:
+        return None
+    return ingredient
+
+def get_ingredient_by_name(db: Session, ingredient_name: int) -> models.Ingredient:
+    """
+    Retrieve an ingredient by its ID.
+
+    Parameters:
+    - db: SQLalchemy Session
+    - ingredient_id: ID of the ingredient
+
+    Returns:
+    - Ingredient model
+    """
+    ingredient = db.query(models.Ingredient).filter(
+        models.Ingredient.name == ingredient_name).first()
     if ingredient is None:
         return None
     return ingredient

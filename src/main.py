@@ -200,6 +200,13 @@ def create_pizza(
     Returns:
     - The created pizza.
     """
+
+    pizza = CRUD.get_pizza_by_name(db,new_pizza.name)
+    
+    if pizza is not None:
+        raise HTTPException(
+            status_code=400, detail = "The pizza already exists")
+    
     if user.permission_level == models.UserType.basic:
         raise HTTPException(status_code=403, 
                             detail="You must be a staff or higher to create pizzas")
@@ -251,6 +258,12 @@ def create_ingredient(
     Returns:
     - The created ingredient.
     """
+    ingredient = CRUD.get_ingredient_by_name(db,new_ingredient.name)
+    
+    if ingredient is not None:
+        raise HTTPException(
+            status_code=400, detail = "The ingredient already exists")
+
     if user.permission_level == models.UserType.basic:
         raise HTTPException(
             status_code=403, detail="You must be a staff or higher to create ingredients")
@@ -274,6 +287,7 @@ def change_ingredient(
     Returns:
     - The updated ingredient details.
     """
+    
     if user.permission_level == models.UserType.basic:
         raise HTTPException(
             status_code=403, detail="You must be a staff or higher to modify ingredients")

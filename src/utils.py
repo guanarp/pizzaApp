@@ -18,8 +18,8 @@ load_dotenv()
 ACCESS_TOKEN_EXPIRE_MINUTES = 60*6  # 360 minutes == 6 hours
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 6 #7 days
 ALGORITHM = "HS256"
-JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']   # should be kept secret
-JWT_REFRESH_SECRET_KEY = os.environ['JWT_REFRESH_SECRET_KEY']
+JWT_SECRET_KEY = "my_key" #os.environ['JWT_SECRET_KEY'] # im actually using .env
+JWT_REFRESH_SECRET_KEY = "my_refresh_key" #os.environ['JWT_REFRESH_SECRET_KEY']
 
 
 password_context = CryptContext(schemes = ["bcrypt"], deprecated = "auto" )

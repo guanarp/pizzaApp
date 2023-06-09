@@ -1,9 +1,15 @@
 import json
+from fastapi import Depends
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
+from .database import get_db
+from . import models
 from .main import app
 
-AUTHORIZATION = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODYyODI2NjUsInN1YiI6Imd1YW5hIn0.tPFrDvvf2DaI14soEmSE1bMxYUHsZQLngVyjp6d0L3A"
+
+
+AUTHORIZATION = ""
 
 client = TestClient(app)
 
@@ -41,6 +47,19 @@ def test_login():
     assert response.status_code == 200
     assert "access_token" in response.json()
     assert "refresh_token" in response.json()
+
+def test_login_SU():
+    data = {
+        "username": "guana",
+        "password": "test123"
+    }
+    response = client.post("/login", data=data)
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+    assert "refresh_token" in response.json()
+    global AUTHORIZATION
+    AUTHORIZATION = "Bearer "+response.json()["access_token"]
+    print(AUTHORIZATION)
 
 def test_login_invalid_username():
     data = {
@@ -134,9 +153,9 @@ def test_create_pizza_unauthorized():
 
 
 def test_update_pizza():
-    pizza_id = 1
+    pizza_id = 2
     pizza_data = {
-        "name": "Updated Pizza",
+        "name": "UpdatedPizza",
         "price": 9,
         "is_active": True,
     }
@@ -144,14 +163,14 @@ def test_update_pizza():
         f"/pizzas/{pizza_id}", json=pizza_data, 
         headers={"Authorization": AUTHORIZATION})
     assert response.status_code == 200
-    assert response.json()["name"] == "Updated Pizza"
+    assert response.json()["name"] == "UpdatedPizza"
     assert response.json()["price"] == 9
 
 
 def test_update_pizza_unauthorized():
     pizza_id = 1
     pizza_data = {
-        "name": "Updated Pizza",
+        "name": "UpdatedPizza",
         "price": 9,
         "is_active": True,
     }
@@ -162,7 +181,7 @@ def test_update_pizza_unauthorized():
 
 
 def test_delete_pizza():
-    pizza_id = 10
+    pizza_id = 8
     response = client.delete(
         f"/pizzas/{pizza_id}", headers={"Authorization": AUTHORIZATION})
     assert response.status_code == 200
@@ -170,25 +189,25 @@ def test_delete_pizza():
 
 
 def test_delete_pizza_unauthorized():
-    pizza_id = 10
+    pizza_id = 8
     response = client.delete(f"/pizzas/{pizza_id}")
     assert response.status_code == 401
     assert "detail" in response.json()
 
 def test_create_ingredient():
     payload = {
-        "name": "New Tomato name",
+        "name": "NewTomatoName",
         "category": "basic"
     }
     response = client.post(
         "/ingredients", json=payload, headers={"Authorization": AUTHORIZATION})
     assert response.status_code == 200
-    assert response.json()["name"] == "New Tomato Name"
+    assert response.json()["name"] == "NewTomatoName"
     assert response.json()["category"] == "basic"
 
 def test_create_ingredient_unauthorized():
     payload = {
-        "name": "New Tomato Name",
+        "name": "NewTomatoName",
         "category": "basic"
     }
     response = client.post(
@@ -221,7 +240,7 @@ def test_change_ingredient_unauthorized():
     assert "detail" in response.json()
 
 def test_delete_ingredient():
-    ingredient_id = 1   
+    ingredient_id = 10   
     response = client.delete(
         f"/ingredients/{ingredient_id}", 
         headers={"Authorization": AUTHORIZATION})
@@ -229,7 +248,7 @@ def test_delete_ingredient():
     assert response.json()["status"] == "completed"
 
 def test_delete_ingredient_unauthorized():
-    ingredient_id = 1   
+    ingredient_id = 10   
     response = client.delete(
         f"/ingredients/{ingredient_id}")
     assert response.status_code == 401
