@@ -1,6 +1,6 @@
 # pizzaApp
 
-A backend project built with FastAPI and SQLAlchemy
+A backend project built with FastAPI and SQLAlchemy; tested using Swagger UI, Postman and Pytest.
 
 ## Requirements
 
