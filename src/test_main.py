@@ -160,7 +160,7 @@ def test_update_pizza():
         "is_active": True,
     }
     response = client.patch(
-        f"/pizzas/{pizza_id}", json=pizza_data, 
+        f"/pizzas/{pizza_id}", params=pizza_data, 
         headers={"Authorization": AUTHORIZATION})
     assert response.status_code == 200
     assert response.json()["name"] == "UpdatedPizza"
@@ -175,7 +175,7 @@ def test_update_pizza_unauthorized():
         "is_active": True,
     }
     response = client.patch(
-        f"/pizzas/{pizza_id}", json=pizza_data)
+        f"/pizzas/{pizza_id}", params=pizza_data)
     assert response.status_code == 401
     assert "detail" in response.json()
 
@@ -217,12 +217,12 @@ def test_create_ingredient_unauthorized():
 
 def test_change_ingredient():
     ingredient_id = 1   
-    payload = {
+    params = {
         "name": "New Tomato Name",
         "category": "premium"
     }
     response = client.patch(
-        f"/ingredients/{ingredient_id}", json=payload, 
+        f"/ingredients/{ingredient_id}", params=params, 
         headers={"Authorization": AUTHORIZATION})
     assert response.status_code == 200
     assert response.json()["name"] == "New Tomato Name"
@@ -230,12 +230,12 @@ def test_change_ingredient():
 
 def test_change_ingredient_unauthorized():
     ingredient_id = 1   
-    payload = {
+    params = {
         "name": "New Tomato Name",
         "category": "basic"
     }
     response = client.patch(
-        f"/ingredients/{ingredient_id}", json=payload)
+        f"/ingredients/{ingredient_id}", params=params)
     assert response.status_code == 401
     assert "detail" in response.json()
 
