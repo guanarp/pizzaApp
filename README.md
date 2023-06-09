@@ -76,6 +76,20 @@ We can access it loading ***&lt;address&gt;/docs***
 
 It should look similar to this.
 
+## Unit tests
+It can be tested using pytest
+If you are in the pizzaApp folder it's just using the command
+```bash
+pytest
+```
+It will detect the test automatically.
+Notice that we don't have a delete user method so after using it for the first time it will assert an error trying to create the same user
+There's some bug with  the patch methods because in the *test* the response is the previous data. But the swaggerUI works well
+The delete methods also show forbidden error but in the swaggerUI also work.
+
+## Postman
+The postman collections have the requierd environment variables for every request. there's a basic token, a jwt "basic user" token and a jwt SuperUser token to test every endpoint.  
+
 ## Database
 
 - We will use the ***pizza_database.db*** that I created with SQLite.
