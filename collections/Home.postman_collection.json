@@ -1,0 +1,30 @@
+{
+	"info": {
+		"_postman_id": "4bad69bb-8d0e-4f66-80c8-11b6b8e6e196",
+		"name": "Home",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27866237",
+		"_collection_link": "https://www.postman.com/technical-explorer-32375146/workspace/pizzaapp/collection/27866237-4bad69bb-8d0e-4f66-80c8-11b6b8e6e196?action=share&creator=27866237&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "home",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
