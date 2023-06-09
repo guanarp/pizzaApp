@@ -66,6 +66,5 @@ def create_refresh_token(
     encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
-#create_access_token()
-#create_access_token()
+
 

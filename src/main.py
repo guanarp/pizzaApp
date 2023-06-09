@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from base64 import b64encode
 
 from . import CRUD, models, schemas
-from .database import SessionLocal, engine, get_db
+from .database import engine, get_db
 from .deps import get_current_user
 from .utils import (
     get_hashed_password,
@@ -107,7 +107,7 @@ def login_basic(credentials: HTTPBasicCredentials = Depends(security)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
-@app.patch("/user/{user_id}", response_model = schemas.User)
+@app.patch("/users/{user_id}", response_model = schemas.User)
 def modify_user_permission(
     user_id: int, level, db: Session = Depends(get_db), 
     modifier: models.User = Depends(get_current_user)) -> models.User:
@@ -186,7 +186,7 @@ def show_pizza_details(
     
     return pizza_detail
 
-@app.post("/pizzas/",response_model = schemas.Pizza)
+@app.post("/pizzas",response_model = schemas.Pizza)
 def create_pizza(
     new_pizza: schemas.PizzaCreate, db: Session = Depends(get_db), 
     user: models.User = Depends(get_current_user)) -> schemas.Pizza:
