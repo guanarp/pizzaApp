@@ -1,6 +1,6 @@
 # pizzaApp
 
-A backend project built with FastAPI and SQLAlchemy
+A backend project built with FastAPI and SQLAlchemy; tested using Swagger UI, Postman and Pytest.
 
 ## Requirements
 
@@ -76,6 +76,20 @@ We can access it loading ***&lt;address&gt;/docs***
 
 It should look similar to this.
 
+## Unit tests
+It can be tested using pytest
+If you are in the pizzaApp folder it's just using the command
+```bash
+pytest
+```
+It will detect the test automatically.
+Notice that we don't have a delete user method so after using it for the first time it will assert an error trying to create the same user
+There's some bug with  the patch methods because in the *test* the response is the previous data. But the swaggerUI works well
+The delete methods also show forbidden error but in the swaggerUI also work.
+
+## Postman
+The postman collections have the requierd environment variables for every request. there's a basic token, a jwt "basic user" token and a jwt SuperUser token to test every endpoint.  
+
 ## Database
 
 - We will use the ***pizza_database.db*** that I created with SQLite.
@@ -130,3 +144,9 @@ It should look similar to this.
 | DELETE | /ingredients/{ingredient_id} | Delete an ingredient. | ingredient_id: ID of the ingredient to delete |
 | POST | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Add an ingredient to a pizza. | pizza_id: ID of the pizza <br>ingredient_id: ID of the ingredient |
 | DELETE | /pizzas/ingredients/{pizza_id}/{ingredient_id} | Remove an ingredient from a pizza. | pizza_id: ID of the pizza <br>ingredient_id: ID of the ingredient |
+
+## To-do
+- The change methods don't have a validation (like the create methods have) to check if the new name is already in the database. The process is similar so it should be quick to modify this.
+- Verify why the change and delete tests are not working as expected even when the requests are indeed working.
+- Add pizza order methods so a client could "ask for a pizza"
+
